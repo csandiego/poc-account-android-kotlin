@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">POC Account</string>
+    <string name="registration_failure_message">Failed to connect to server. Please try again later.</string>
+    <string name="edit_text_email_hint">Email</string>
+    <string name="edit_text_password_hint">Password</string>
+    <string name="button_register_text">Register</string>
 </resources>
