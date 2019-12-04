@@ -1,0 +1,35 @@
+syntax = "proto2";
+
+option java_multiple_files = true;
+option java_package = "com.github.csandiego.pocaccount.protobuf";
+option java_outer_classname = "Protobuf";
+
+package protobuf;
+
+message Empty{}
+
+message ValidationRequest {
+  required string email = 1;
+}
+
+message ValidationResponse {
+  required bool valid = 1;
+}
+
+message UserCredential {
+  required string email = 1;
+  required string password = 2;
+}
+
+message AuthenticationResponse {
+  required int64 user_id = 1;
+}
+
+service UserRegistration {
+  rpc Validate(ValidationRequest) returns (ValidationResponse);
+  rpc Register(UserCredential) returns (Empty);
+}
+
+service Authentication {
+  rpc Authenticate(UserCredential) returns (AuthenticationResponse);
+}
