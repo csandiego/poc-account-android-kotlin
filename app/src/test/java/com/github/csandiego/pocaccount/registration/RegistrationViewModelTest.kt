@@ -28,6 +28,7 @@ class RegistrationViewModelTest {
         service = TestUserRegistrationService()
         viewModel = RegistrationViewModel(service).apply {
             isEmailValid.observeForever {}
+            validationFailure.observeForever {}
             registrationSuccess.observeForever {}
             registrationFailure.observeForever {}
         }
@@ -39,19 +40,49 @@ class RegistrationViewModelTest {
     }
 
     @Test
-    fun givenValidEmailWhenEmailSetThenIsEmailValidIsTrue() {
-        service.validateResult = true
+    fun givenAnyEmailWhenEmailSetThenValidateEmail() {
+        with(service) {
+            validateResult = true
+            validateException = false
+        }
         viewModel.email = credential.email
-        assertTrue(viewModel.isEmailValid.value!!)
+        assertEquals(credential.email, service.validateEmail)
     }
 
     @Test
-    fun givenInValidEmailWhenEmailSetThenIsEmailValidIsFalse() {
-        service.validateResult = true
+    fun givenAnyEmailWhenServiceResultInvalidThenIsEmailValidIsFalse() {
+        with(service) {
+            validateResult = true
+            validateException = false
+        }
         viewModel.email = credential.email
         service.validateResult = false
         viewModel.email = "prefix" + credential.email
         assertFalse(viewModel.isEmailValid.value!!)
+    }
+
+    @Test
+    fun givenAnyEmailWhenServiceResultValidThenIsEmailValidIsTrue() {
+        with(service) {
+            validateResult = true
+            validateException = false
+        }
+        with(viewModel) {
+            email = credential.email
+            assertTrue(isEmailValid.value!!)
+        }
+    }
+
+    @Test
+    fun givenServiceIssuesWhenValidateThenValidationFailureIsTrue() {
+        with(service) {
+            validateResult = true
+            validateException = true
+        }
+        with(viewModel) {
+            email = credential.email
+            assertTrue(validationFailure.value!!)
+        }
     }
 
     @Test
@@ -86,10 +117,18 @@ class RegistrationViewModelTest {
     }
 
     private class TestUserRegistrationService : UserRegistrationService {
+        lateinit var validateEmail: String
         var validateResult = false
+        var validateException = false
         lateinit var registerCredential: UserCredential
         var registerException = false
-        override suspend fun validate(email: String) = validateResult
+        override suspend fun validate(email: String): Boolean {
+            validateEmail = email
+            if (validateException) {
+                throw Exception()
+            }
+            return validateResult
+        }
         override suspend fun register(credential: UserCredential) {
             registerCredential = credential
             if (registerException) {

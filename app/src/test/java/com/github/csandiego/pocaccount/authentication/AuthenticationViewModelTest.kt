@@ -35,6 +35,7 @@ class AuthenticationViewModelTest {
 
     @Test
     fun givenValidEmailAndPasswordWhenAuthenticateThenAuthenticateUserCredential() {
+        service.authenticateException = false
         with(viewModel) {
             email = credential.email
             password = credential.password
@@ -45,6 +46,7 @@ class AuthenticationViewModelTest {
 
     @Test
     fun givenValidEmailAndPasswordWhenAuthenticateThenAuthenticationSuccessIsTrue() {
+        service.authenticateException = false
         with(viewModel) {
             email = credential.email
             password = credential.password
@@ -67,13 +69,12 @@ class AuthenticationViewModelTest {
     private class TestAuthenticationService : AuthenticationService {
         lateinit var authenticateCredential: UserCredential
         var authenticateException = false
-        var authenticateUserId = 0L
         override suspend fun authenticate(credential: UserCredential): Long {
             authenticateCredential = credential
             if (authenticateException) {
                 throw Exception()
             }
-            return authenticateUserId
+            return 1L
         }
     }
 }
