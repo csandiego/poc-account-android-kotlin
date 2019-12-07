@@ -27,6 +27,16 @@ class RegistrationFragment(viewModelFactory: ViewModelProvider.Factory) : Fragme
             lifecycleOwner = viewLifecycleOwner
         }
         with(viewModel) {
+            validationFailure.observe(viewLifecycleOwner) {
+                if (it) {
+                    validationFailureHandled()
+                    Snackbar.make(
+                        binding.coordinatorLayout,
+                        R.string.validation_failure_message,
+                        LENGTH_LONG
+                    ).show()
+                }
+            }
             registrationFailure.observe(viewLifecycleOwner) {
                 if (it) {
                     registrationFailureHandled()

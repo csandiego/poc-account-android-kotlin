@@ -6,4 +6,5 @@
     <string name="button_register_text">Register</string>
     <string name="button_authenticate_text">Login</string>
     <string name="authentication_failure_message">Failed to connect to server. Please try again later.</string>
+    <string name="validation_failure_message">Failed to connect to service. Please try again later</string>
 </resources>

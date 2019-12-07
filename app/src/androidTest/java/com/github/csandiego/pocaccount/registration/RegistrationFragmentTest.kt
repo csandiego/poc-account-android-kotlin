@@ -1,5 +1,8 @@
 package com.github.csandiego.pocaccount.registration
 
+import androidx.databinding.DataBindingUtil
+import androidx.databinding.ViewDataBinding
+import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -19,6 +22,7 @@ import org.junit.Test
 class RegistrationFragmentTest {
 
     private lateinit var service: TestUserRegistrationService
+    private lateinit var scenario: FragmentScenario<RegistrationFragment>
     private val credential = UserCredential("someone@somewhere.com", "password")
 
     @Before
@@ -30,14 +34,24 @@ class RegistrationFragmentTest {
                 return RegistrationViewModel(service) as T
             }
         }
-        launchFragmentInContainer(themeResId = R.style.AppTheme) {
+        scenario = launchFragmentInContainer(themeResId = R.style.AppTheme) {
             RegistrationFragment(viewModelFactory)
         }
     }
 
     @Test
-    fun givenInValidEmailWhenEmailEnteredThenDisableRegisterButton() {
-        service.validateResult = true
+    fun givenAnyEmailWhenEmailEnteredThenValidateEmail() {
+        service.registerException = false
+        onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
+        assertEquals(service.validateEmail, credential.email)
+    }
+
+    @Test
+    fun givenAnyEmailWhenServiceResultInvalidThenDisableRegisterButton() {
+        with(service) {
+            validateResult = true
+            validateException = false
+        }
         onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
         service.validateResult = false
         onView(withId(R.id.editTextEmail)).perform(replaceText("prefix" + credential.email))
@@ -45,15 +59,34 @@ class RegistrationFragmentTest {
     }
 
     @Test
-    fun givenValidEmailWhenEmailEnteredThenEnableRegisterButton() {
-        service.validateResult = true
+    fun givenAnyEmailWhenServiceResultValidThenEnableRegisterButton() {
+        with(service) {
+            validateResult = true
+            validateException = false
+        }
         onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
         onView(withId(R.id.buttonRegister)).check(matches(isEnabled()))
     }
 
     @Test
-    fun givenValidEmailAndPasswordWhenRegisterButtonClickedThenRegisterUserCredential() {
-        service.validateResult = true
+    fun givenServiceIssuesWhenValidateThenShowSnackbar() {
+        with(service) {
+            validateResult = true
+            validateException = true
+        }
+        onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
+        scenario.onFragment {
+            DataBindingUtil.getBinding<ViewDataBinding>(it.requireView())!!.executePendingBindings()
+        }
+        onView(withText(R.string.validation_failure_message)).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun givenValidEmailWhenRegisterButtonClickedThenRegisterUserCredential() {
+        with(service) {
+            validateResult = true
+            registerException = false
+        }
         onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
         onView(withId(R.id.editTextPassword)).perform(replaceText(credential.password))
         onView(withId(R.id.buttonRegister)).perform(click())
@@ -73,10 +106,18 @@ class RegistrationFragmentTest {
     }
 
     private class TestUserRegistrationService : UserRegistrationService {
+        lateinit var validateEmail: String
         var validateResult = false
+        var validateException = false
         lateinit var registerCredential: UserCredential
         var registerException = false
-        override suspend fun validate(email: String) = validateResult
+        override suspend fun validate(email: String): Boolean {
+            validateEmail = email
+            if (validateException) {
+                throw Exception()
+            }
+            return validateResult
+        }
         override suspend fun register(credential: UserCredential) {
             registerCredential = credential
             if (registerException) {

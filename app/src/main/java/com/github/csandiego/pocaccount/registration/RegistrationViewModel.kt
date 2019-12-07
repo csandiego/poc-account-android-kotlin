@@ -25,8 +25,19 @@ class RegistrationViewModel(private val service: UserRegistrationService) : View
     private val _isEmailValid = MutableLiveData(false)
     val isEmailValid: LiveData<Boolean> get() = _isEmailValid
 
+    private val _validationFailure = MutableLiveData(false)
+    val validationFailure: LiveData<Boolean> get() = _validationFailure
+
+    fun validationFailureHandled() {
+        _validationFailure.value = false
+    }
+
     private fun validateEmail(email: String) = viewModelScope.launch {
-        _isEmailValid.value = service.validate(email)
+        try {
+            _isEmailValid.value = service.validate(email)
+        } catch (e: Exception) {
+            _validationFailure.value = true
+        }
     }
 
     private val _registrationSuccess = MutableLiveData(false)
