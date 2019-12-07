@@ -54,13 +54,12 @@ class AuthenticationFragmentTest {
     private class TestAuthenticationService : AuthenticationService {
         lateinit var authenticateCredential: UserCredential
         var authenticateException = false
-        var authenticateUserId = 0L
         override suspend fun authenticate(credential: UserCredential): Long {
             authenticateCredential = credential
             if (authenticateException) {
                 throw Exception()
             }
-            return authenticateUserId
+            return 1L
         }
     }
 }
