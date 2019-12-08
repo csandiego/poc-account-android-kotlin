@@ -7,4 +7,7 @@
     <string name="button_authenticate_text">Login</string>
     <string name="authentication_failure_message">Failed to connect to server. Please try again later.</string>
     <string name="validation_failure_message">Failed to connect to service. Please try again later</string>
+    <string name="login_invalid_credential_message">Invalid email/password</string>
+    <string name="button_login_text">Login</string>
+    <string name="login_error_message">Failed to connect to service. Please try again later</string>
 </resources>
