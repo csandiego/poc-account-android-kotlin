@@ -1,6 +1,8 @@
 package com.github.csandiego.pocaccount.login
 
 import androidx.fragment.app.testing.launchFragmentInContainer
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.test.espresso.Espresso.onView
@@ -69,29 +71,23 @@ class LoginFragmentTest {
         var loginUserId = 0L
         var loginException = false
 
-        private var _userId = 0L
-        private var _isLoggedIn = false
+        private var _userId = MutableLiveData<Long?>()
+        override val userId: LiveData<Long?> get() = _userId
 
-        override val userId: Long
-            get() = _userId
-        override val isLoggedIn: Boolean
-            get() = _isLoggedIn
-
-        override fun login(credential: UserCredential): Boolean {
+        override suspend fun login(credential: UserCredential): Boolean {
             loginCredential = credential
             if (loginException) {
                 throw Exception()
             }
             if (loginUserId > 0L) {
-                _userId = loginUserId
-                _isLoggedIn = true
+                _userId.value = loginUserId
+                return true
             }
-            return isLoggedIn
+            return false
         }
 
         override fun logout() {
-            _userId = 0L
-            _isLoggedIn = false
+            _userId.value = null
         }
     }
 }

@@ -1,6 +1,8 @@
 package com.github.csandiego.pocaccount.login
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import com.github.csandiego.pocaccount.R
 import com.github.csandiego.pocaccount.authentication.AuthenticationContext
 import com.github.csandiego.pocaccount.data.UserCredential
@@ -91,29 +93,23 @@ class LoginViewModelTest {
         var loginUserId = 0L
         var loginException = false
 
-        private var _userId = 0L
-        private var _isLoggedIn = false
+        private var _userId = MutableLiveData<Long?>()
+        override val userId: LiveData<Long?> get() = _userId
 
-        override val userId: Long
-            get() = _userId
-        override val isLoggedIn: Boolean
-            get() = _isLoggedIn
-
-        override fun login(credential: UserCredential): Boolean {
+        override suspend fun login(credential: UserCredential): Boolean {
             loginCredential = credential
             if (loginException) {
                 throw Exception()
             }
             if (loginUserId > 0L) {
-                _userId = loginUserId
-                _isLoggedIn = true
+                _userId.value = loginUserId
+                return true
             }
-            return isLoggedIn
+            return false
         }
 
         override fun logout() {
-            _userId = 0L
-            _isLoggedIn = false
+            _userId.value = null
         }
     }
 }
