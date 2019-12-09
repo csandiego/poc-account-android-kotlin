@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
+import androidx.navigation.fragment.findNavController
 import com.github.csandiego.pocaccount.R
 import com.github.csandiego.pocaccount.databinding.FragmentLoginBinding
 import com.google.android.material.snackbar.Snackbar
@@ -26,8 +27,17 @@ class LoginFragment @Inject constructor(viewModelFactory: ViewModelProvider.Fact
         val binding = FragmentLoginBinding.inflate(inflater, container, false).apply {
             viewModel = this@LoginFragment.viewModel
             lifecycleOwner = viewLifecycleOwner
+            buttonRegister.setOnClickListener {
+                findNavController().navigate(LoginFragmentDirections.actionLoginFragmentToRegistrationFragment())
+            }
         }
         with(viewModel) {
+            loginSuccess.observe(viewLifecycleOwner) {
+                if (it) {
+                    loginSuccessHandled()
+                    findNavController().navigateUp()
+                }
+            }
             loginFailure.observe(viewLifecycleOwner) {
                 if (it != null) {
                     loginFailureHandled()

@@ -44,7 +44,7 @@ interface MainActivityModule {
     @Binds
     @IntoMap
     @FragmentKey(LoginFragment::class)
-    fun provideLoginFragment(fragment: HomeFragment): Fragment
+    fun provideLoginFragment(fragment: LoginFragment): Fragment
 
     @Binds
     @IntoMap

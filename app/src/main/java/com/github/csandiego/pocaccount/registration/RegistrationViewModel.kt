@@ -44,7 +44,7 @@ class RegistrationViewModel @Inject constructor(private val service: UserRegistr
     private val _registrationSuccess = MutableLiveData(false)
     val registrationSuccess: LiveData<Boolean> get() = _registrationSuccess
 
-    fun registationSuccessHandled() {
+    fun registrationSuccessHandled() {
         _registrationSuccess.value = false
     }
 

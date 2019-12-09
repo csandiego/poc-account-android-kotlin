@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.observe
+import androidx.navigation.fragment.findNavController
 import com.github.csandiego.pocaccount.R
 import com.github.csandiego.pocaccount.databinding.FragmentRegistrationBinding
 import com.google.android.material.snackbar.Snackbar
@@ -36,6 +37,12 @@ class RegistrationFragment @Inject constructor(viewModelFactory: ViewModelProvid
                         R.string.validation_failure_message,
                         LENGTH_LONG
                     ).show()
+                }
+            }
+            registrationSuccess.observe(viewLifecycleOwner) {
+                if (it) {
+                    registrationSuccessHandled()
+                    findNavController().navigateUp()
                 }
             }
             registrationFailure.observe(viewLifecycleOwner) {
