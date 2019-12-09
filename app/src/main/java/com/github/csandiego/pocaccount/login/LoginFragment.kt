@@ -12,8 +12,9 @@ import com.github.csandiego.pocaccount.R
 import com.github.csandiego.pocaccount.databinding.FragmentLoginBinding
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.snackbar.Snackbar.LENGTH_LONG
+import javax.inject.Inject
 
-class LoginFragment(viewModelFactory: ViewModelProvider.Factory) : Fragment() {
+class LoginFragment @Inject constructor(viewModelFactory: ViewModelProvider.Factory) : Fragment() {
 
     private val viewModel by viewModels<LoginViewModel> { viewModelFactory }
 

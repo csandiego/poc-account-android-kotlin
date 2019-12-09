@@ -1,4 +1,4 @@
-package com.github.csandiego.pocaccount.authentication
+package com.github.csandiego.pocaccount.dao
 
 import androidx.lifecycle.LiveData
 

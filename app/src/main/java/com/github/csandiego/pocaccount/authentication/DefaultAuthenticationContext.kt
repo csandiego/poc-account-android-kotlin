@@ -1,9 +1,11 @@
 package com.github.csandiego.pocaccount.authentication
 
+import com.github.csandiego.pocaccount.dao.AuthenticationDao
 import com.github.csandiego.pocaccount.data.UserCredential
 import com.github.csandiego.pocaccount.service.AuthenticationService
+import javax.inject.Inject
 
-class DefaultAuthenticationContext(
+class DefaultAuthenticationContext @Inject constructor(
     private val dao: AuthenticationDao,
     private val service: AuthenticationService
 ) : AuthenticationContext {

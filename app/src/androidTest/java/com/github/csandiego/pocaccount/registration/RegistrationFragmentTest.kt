@@ -13,7 +13,7 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.*
 import com.github.csandiego.pocaccount.R
 import com.github.csandiego.pocaccount.data.UserCredential
-import com.github.csandiego.pocaccount.service.UserRegistrationService
+import com.github.csandiego.pocaccount.service.TestUserRegistrationService
 import org.hamcrest.Matchers.not
 import org.junit.Assert.assertEquals
 import org.junit.Before
@@ -43,6 +43,9 @@ class RegistrationFragmentTest {
     fun givenAnyEmailWhenEmailEnteredThenValidateEmail() {
         service.registerException = false
         onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
+        scenario.onFragment {
+            DataBindingUtil.getBinding<ViewDataBinding>(it.requireView())!!.executePendingBindings()
+        }
         assertEquals(service.validateEmail, credential.email)
     }
 
@@ -65,6 +68,9 @@ class RegistrationFragmentTest {
             validateException = false
         }
         onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
+        scenario.onFragment {
+            DataBindingUtil.getBinding<ViewDataBinding>(it.requireView())!!.executePendingBindings()
+        }
         onView(withId(R.id.buttonRegister)).check(matches(isEnabled()))
     }
 
@@ -103,26 +109,5 @@ class RegistrationFragmentTest {
         onView(withId(R.id.editTextPassword)).perform(replaceText(credential.password))
         onView(withId(R.id.buttonRegister)).perform(click())
         onView(withText(R.string.registration_failure_message)).check(matches(isDisplayed()))
-    }
-
-    private class TestUserRegistrationService : UserRegistrationService {
-        lateinit var validateEmail: String
-        var validateResult = false
-        var validateException = false
-        lateinit var registerCredential: UserCredential
-        var registerException = false
-        override suspend fun validate(email: String): Boolean {
-            validateEmail = email
-            if (validateException) {
-                throw Exception()
-            }
-            return validateResult
-        }
-        override suspend fun register(credential: UserCredential) {
-            registerCredential = credential
-            if (registerException) {
-                throw Exception()
-            }
-        }
     }
 }

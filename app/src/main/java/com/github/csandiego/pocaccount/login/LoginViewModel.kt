@@ -8,8 +8,9 @@ import com.github.csandiego.pocaccount.R
 import com.github.csandiego.pocaccount.authentication.AuthenticationContext
 import com.github.csandiego.pocaccount.data.UserCredential
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class LoginViewModel(private val context: AuthenticationContext) : ViewModel() {
+class LoginViewModel @Inject constructor(private val context: AuthenticationContext) : ViewModel() {
 
     var email = ""
     var password = ""

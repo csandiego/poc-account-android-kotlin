@@ -3,6 +3,7 @@ package com.github.csandiego.pocaccount.authentication
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.github.csandiego.pocaccount.dao.AuthenticationDao
 import com.github.csandiego.pocaccount.data.UserCredential
 import com.github.csandiego.pocaccount.service.AuthenticationService
 import kotlinx.coroutines.runBlocking
@@ -79,7 +80,8 @@ class DefaultAuthenticationContextTest {
         assertNull(dao.mutableUserId.value)
     }
 
-    private class TestAuthenticationDao: AuthenticationDao {
+    private class TestAuthenticationDao:
+        AuthenticationDao {
 
         val mutableUserId = MutableLiveData<Long?>()
         override val userId: LiveData<Long?> get() = mutableUserId

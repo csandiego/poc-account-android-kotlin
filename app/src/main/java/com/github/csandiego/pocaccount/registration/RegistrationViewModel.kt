@@ -7,8 +7,9 @@ import androidx.lifecycle.viewModelScope
 import com.github.csandiego.pocaccount.data.UserCredential
 import com.github.csandiego.pocaccount.service.UserRegistrationService
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class RegistrationViewModel(private val service: UserRegistrationService) : ViewModel() {
+class RegistrationViewModel @Inject constructor(private val service: UserRegistrationService) : ViewModel() {
 
     private var _email = ""
     var email: String

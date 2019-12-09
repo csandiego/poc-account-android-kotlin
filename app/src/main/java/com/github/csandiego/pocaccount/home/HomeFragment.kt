@@ -9,8 +9,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.github.csandiego.pocaccount.databinding.FragmentHomeBinding
+import javax.inject.Inject
 
-class HomeFragment(viewModelFactory: ViewModelProvider.Factory) : Fragment() {
+class HomeFragment @Inject constructor(viewModelFactory: ViewModelProvider.Factory) : Fragment() {
 
     private val viewModel by viewModels<HomeViewModel> { viewModelFactory }
 
