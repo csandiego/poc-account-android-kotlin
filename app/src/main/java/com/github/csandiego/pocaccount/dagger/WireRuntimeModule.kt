@@ -14,13 +14,14 @@ class WireRuntimeModule {
 
     @Singleton
     @Provides
-    fun provideHttpClient() =
-        OkHttpClient.Builder().protocols(listOf(Protocol.H2_PRIOR_KNOWLEDGE)).build()
+    fun provideHttpClient() = OkHttpClient.Builder()
+        .protocols(listOf(Protocol.H2_PRIOR_KNOWLEDGE))
+        .build()
 
     @Singleton
     @Provides
     fun provideGrpcClient(client: OkHttpClient) =
-        GrpcClient.Builder().client(client).baseUrl("http://localhost:80").build()
+        GrpcClient.Builder().client(client).baseUrl("http://localhost:8000").build()
 
     @Singleton
     @Provides
