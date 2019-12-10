@@ -1,9 +1,6 @@
 package com.github.csandiego.pocaccount.registration
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.*
 import com.github.csandiego.pocaccount.data.UserCredential
 import com.github.csandiego.pocaccount.service.UserRegistrationService
 import kotlinx.coroutines.launch
@@ -11,35 +8,32 @@ import javax.inject.Inject
 
 class RegistrationViewModel @Inject constructor(private val service: UserRegistrationService) : ViewModel() {
 
-    private var _email = ""
-    var email: String
-        get() = _email
-        set(value) {
-            if (value != _email) {
-                _email = value
-                validateEmail(value)
+    val email = MutableLiveData("")
+    val password = MutableLiveData("")
+
+    private val _validationError = MutableLiveData(false)
+    val validationError: LiveData<Boolean> get() = _validationError
+
+    fun validationErrorHandled() {
+        _validationError.value = false
+    }
+
+    val isEmailValid = email.switchMap {
+        val valid = MutableLiveData(false)
+        if (it.isNotEmpty()) {
+            viewModelScope.launch {
+                try {
+                    valid.value = service.validate(it)
+                } catch (e: Exception) {
+                    _validationError.value = true
+                }
             }
         }
-
-    var password = ""
-
-    private val _isEmailValid = MutableLiveData(false)
-    val isEmailValid: LiveData<Boolean> get() = _isEmailValid
-
-    private val _validationFailure = MutableLiveData(false)
-    val validationFailure: LiveData<Boolean> get() = _validationFailure
-
-    fun validationFailureHandled() {
-        _validationFailure.value = false
+        valid
     }
 
-    private fun validateEmail(email: String) = viewModelScope.launch {
-        try {
-            _isEmailValid.value = service.validate(email)
-        } catch (e: Exception) {
-            _validationFailure.value = true
-        }
-    }
+    private val _registrationInProgress = MutableLiveData(false)
+    val registrationInProgress: LiveData<Boolean> get() = _registrationInProgress
 
     private val _registrationSuccess = MutableLiveData(false)
     val registrationSuccess: LiveData<Boolean> get() = _registrationSuccess
@@ -48,19 +42,21 @@ class RegistrationViewModel @Inject constructor(private val service: UserRegistr
         _registrationSuccess.value = false
     }
 
-    private val _registrationFailure = MutableLiveData(false)
-    val registrationFailure: LiveData<Boolean> get() = _registrationFailure
+    private val _registrationError = MutableLiveData(false)
+    val registrationError: LiveData<Boolean> get() = _registrationError
 
-    fun registrationFailureHandled() {
-        _registrationFailure.value = false
+    fun registrationErrorHandled() {
+        _registrationError.value = false
     }
 
     fun register() = viewModelScope.launch {
+        _registrationInProgress.value = true
         try {
-            service.register(UserCredential(_email, password))
+            service.register(UserCredential(email.value!!, password.value!!))
             _registrationSuccess.value = true
         } catch (e: Exception) {
-            _registrationFailure.value = true
+            _registrationError.value = true
         }
+        _registrationInProgress.value = false
     }
 }

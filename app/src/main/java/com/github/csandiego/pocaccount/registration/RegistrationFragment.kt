@@ -29,9 +29,9 @@ class RegistrationFragment @Inject constructor(viewModelFactory: ViewModelProvid
             lifecycleOwner = viewLifecycleOwner
         }
         with(viewModel) {
-            validationFailure.observe(viewLifecycleOwner) {
+            validationError.observe(viewLifecycleOwner) {
                 if (it) {
-                    validationFailureHandled()
+                    validationErrorHandled()
                     Snackbar.make(
                         binding.coordinatorLayout,
                         R.string.validation_failure_message,
@@ -45,9 +45,9 @@ class RegistrationFragment @Inject constructor(viewModelFactory: ViewModelProvid
                     findNavController().navigateUp()
                 }
             }
-            registrationFailure.observe(viewLifecycleOwner) {
+            registrationError.observe(viewLifecycleOwner) {
                 if (it) {
-                    registrationFailureHandled()
+                    registrationErrorHandled()
                     Snackbar.make(
                         binding.coordinatorLayout,
                         R.string.registration_failure_message,

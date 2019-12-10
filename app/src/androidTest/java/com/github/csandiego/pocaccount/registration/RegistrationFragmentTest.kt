@@ -1,11 +1,11 @@
 package com.github.csandiego.pocaccount.registration
 
-import androidx.databinding.DataBindingUtil
-import androidx.databinding.ViewDataBinding
 import androidx.fragment.app.testing.FragmentScenario
 import androidx.fragment.app.testing.launchFragmentInContainer
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
+import androidx.navigation.Navigation
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.replaceText
@@ -18,6 +18,8 @@ import org.hamcrest.Matchers.not
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
 
 class RegistrationFragmentTest {
 
@@ -41,37 +43,10 @@ class RegistrationFragmentTest {
 
     @Test
     fun givenAnyEmailWhenEmailEnteredThenValidateEmail() {
-        service.registerException = false
+        service.validateException = false
         onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
-        scenario.onFragment {
-            DataBindingUtil.getBinding<ViewDataBinding>(it.requireView())!!.executePendingBindings()
-        }
+        scenario.onFragment {}
         assertEquals(service.validateEmail, credential.email)
-    }
-
-    @Test
-    fun givenAnyEmailWhenServiceResultInvalidThenDisableRegisterButton() {
-        with(service) {
-            validateResult = true
-            validateException = false
-        }
-        onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
-        service.validateResult = false
-        onView(withId(R.id.editTextEmail)).perform(replaceText("prefix" + credential.email))
-        onView(withId(R.id.buttonRegister)).check(matches(not(isEnabled())))
-    }
-
-    @Test
-    fun givenAnyEmailWhenServiceResultValidThenEnableRegisterButton() {
-        with(service) {
-            validateResult = true
-            validateException = false
-        }
-        onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
-        scenario.onFragment {
-            DataBindingUtil.getBinding<ViewDataBinding>(it.requireView())!!.executePendingBindings()
-        }
-        onView(withId(R.id.buttonRegister)).check(matches(isEnabled()))
     }
 
     @Test
@@ -81,16 +56,59 @@ class RegistrationFragmentTest {
             validateException = true
         }
         onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
-        scenario.onFragment {
-            DataBindingUtil.getBinding<ViewDataBinding>(it.requireView())!!.executePendingBindings()
-        }
+        scenario.onFragment {}
         onView(withText(R.string.validation_failure_message)).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun whenEmailInvalidAndPasswordEmptyThenDisableRegisterButton() {
+        with(service) {
+            validateResult = false
+            validateException = false
+        }
+        onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
+        onView(withId(R.id.editTextPassword)).perform(replaceText(""))
+        onView(withId(R.id.buttonRegister)).check(matches(not(isEnabled())))
+    }
+
+    @Test
+    fun whenEmailInvalidAndPasswordNotEmptyThenDisableRegisterButton() {
+        with(service) {
+            validateResult = false
+            validateException = false
+        }
+        onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
+        onView(withId(R.id.editTextPassword)).perform(replaceText(credential.password))
+        onView(withId(R.id.buttonRegister)).check(matches(not(isEnabled())))
+    }
+
+    @Test
+    fun whenEmailValidAndPasswordEmptyThenDisableRegisterButton() {
+        with(service) {
+            validateResult = true
+            validateException = false
+        }
+        onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
+        onView(withId(R.id.editTextPassword)).perform(replaceText(""))
+        onView(withId(R.id.buttonRegister)).check(matches(not(isEnabled())))
+    }
+
+    @Test
+    fun whenEmailValidAndPasswordNotEmptyThenEnableRegisterButton() {
+        with(service) {
+            validateResult = true
+            validateException = false
+        }
+        onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
+        onView(withId(R.id.editTextPassword)).perform(replaceText(credential.password))
+        onView(withId(R.id.buttonRegister)).check(matches(isEnabled()))
     }
 
     @Test
     fun givenValidEmailWhenRegisterButtonClickedThenRegisterUserCredential() {
         with(service) {
             validateResult = true
+            validateException = false
             registerException = false
         }
         onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
@@ -100,9 +118,27 @@ class RegistrationFragmentTest {
     }
 
     @Test
+    fun givenValidEmailWhenRegisterButtonClickedThenNavigateUp() {
+        with(service) {
+            validateResult = true
+            validateException = false
+            registerException = false
+        }
+        val navController = mock(NavController::class.java)
+        scenario.onFragment {
+            Navigation.setViewNavController(it.requireView(), navController)
+        }
+        onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
+        onView(withId(R.id.editTextPassword)).perform(replaceText(credential.password))
+        onView(withId(R.id.buttonRegister)).perform(click())
+        verify(navController).navigateUp()
+    }
+
+    @Test
     fun givenServiceIssuesWhenRegisterButtonClickedThenShowSnackbar() {
         with(service) {
             validateResult = true
+            validateException = false
             registerException = true
         }
         onView(withId(R.id.editTextEmail)).perform(replaceText(credential.email))
