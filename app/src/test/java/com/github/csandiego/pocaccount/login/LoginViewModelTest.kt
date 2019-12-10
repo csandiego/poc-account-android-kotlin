@@ -8,12 +8,14 @@ import com.github.csandiego.pocaccount.authentication.AuthenticationContext
 import com.github.csandiego.pocaccount.data.UserCredential
 import com.github.csandiego.pocaccount.test.MainDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertTrue
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.test.runBlockingTest
+import org.junit.Assert.*
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 
+@ExperimentalCoroutinesApi
 class LoginViewModelTest {
 
     private lateinit var context: TestAuthenticationContext
@@ -23,7 +25,6 @@ class LoginViewModelTest {
     @get:Rule
     val instantTaskExecutorRule = InstantTaskExecutorRule()
 
-    @ExperimentalCoroutinesApi
     @get:Rule
     val mainDispatcherRule = MainDispatcherRule()
 
@@ -32,6 +33,7 @@ class LoginViewModelTest {
         context =
             TestAuthenticationContext()
         viewModel = LoginViewModel(context).apply {
+            loginInProgress.observeForever {}
             loginSuccess.observeForever {}
             loginFailure.observeForever {}
             loginError.observeForever {}
@@ -42,11 +44,36 @@ class LoginViewModelTest {
     fun givenEmailAndPasswordWhenLoginThenLoginUserCredential() {
         context.loginException = false
         with(viewModel) {
-            email = credential.email
-            password = credential.password
+            email.value = credential.email
+            password.value = credential.password
             login()
         }
         assertEquals(credential, context.loginCredential)
+    }
+
+    @Test
+    fun givenEmailAndPasswordWhenLoginThenLoginInProgressIsTrue() = mainDispatcherRule.dispatcher.runBlockingTest {
+        with(context) {
+            loginDelay = 1000L
+            loginException = false
+        }
+        with(viewModel) {
+            email.value = credential.email
+            password.value = credential.password
+            login()
+            assertTrue(loginInProgress.value!!)
+        }
+    }
+
+    @Test
+    fun givenEmailAndPasswordWhenLoginFinishedThenLoginInProgressIsFalse() {
+        context.loginException = false
+        with(viewModel) {
+            email.value = credential.email
+            password.value = credential.password
+            login()
+            assertFalse(loginInProgress.value!!)
+        }
     }
 
     @Test
@@ -56,8 +83,8 @@ class LoginViewModelTest {
             loginException = false
         }
         with(viewModel) {
-            email = credential.email
-            password = credential.password
+            email.value = credential.email
+            password.value = credential.password
             login()
             assertTrue(viewModel.loginSuccess.value!!)
         }
@@ -70,8 +97,8 @@ class LoginViewModelTest {
             loginException = false
         }
         with(viewModel) {
-            email = credential.email
-            password = credential.password
+            email.value = credential.email
+            password.value = credential.password
             login()
             assertEquals(R.string.login_invalid_credential_message, loginFailure.value)
         }
@@ -81,8 +108,8 @@ class LoginViewModelTest {
     fun givenLoginIssuesWhenLoginThenLoginErrorIsTrue() {
         context.loginException = true
         with(viewModel) {
-            email = credential.email
-            password = credential.password
+            email.value = credential.email
+            password.value = credential.password
             login()
             assertTrue(viewModel.loginError.value!!)
         }
@@ -91,6 +118,7 @@ class LoginViewModelTest {
     private class TestAuthenticationContext: AuthenticationContext {
         lateinit var loginCredential: UserCredential
         var loginUserId = 0L
+        var loginDelay = 0L
         var loginException = false
 
         private var _userId = MutableLiveData<Long?>()
@@ -98,6 +126,9 @@ class LoginViewModelTest {
 
         override suspend fun login(credential: UserCredential): Boolean {
             loginCredential = credential
+            if (loginDelay > 0L) {
+                delay(loginDelay)
+            }
             if (loginException) {
                 throw Exception()
             }

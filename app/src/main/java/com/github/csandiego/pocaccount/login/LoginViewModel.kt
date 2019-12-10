@@ -12,8 +12,11 @@ import javax.inject.Inject
 
 class LoginViewModel @Inject constructor(private val context: AuthenticationContext) : ViewModel() {
 
-    var email = ""
-    var password = ""
+    val email = MutableLiveData("")
+    val password = MutableLiveData("")
+
+    private val _loginInProgress = MutableLiveData(false)
+    val loginInProgress: LiveData<Boolean> get() = _loginInProgress
 
     private val _loginSuccess = MutableLiveData(false)
     val loginSuccess: LiveData<Boolean> get() = _loginSuccess
@@ -37,8 +40,9 @@ class LoginViewModel @Inject constructor(private val context: AuthenticationCont
     }
 
     fun login() = viewModelScope.launch {
+        _loginInProgress.value = true
         try {
-            if (context.login(UserCredential(email, password))) {
+            if (context.login(UserCredential(email.value!!, password.value!!))) {
                 _loginSuccess.value = true
             } else {
                 _loginFailure.value = R.string.login_invalid_credential_message
@@ -46,5 +50,6 @@ class LoginViewModel @Inject constructor(private val context: AuthenticationCont
         } catch (e: Exception) {
             _loginError.value = true
         }
+        _loginInProgress.value = false
     }
 }
